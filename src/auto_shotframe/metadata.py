@@ -23,6 +23,8 @@ class PhotoMetadata:
 
     @property
     def shot_on_line(self) -> str | None:
+        if self.brand is not None and self.brand.slug == "apple":
+            return f"Shot on {self.camera}" if self.camera else None
         details = [value for value in (self.camera, self.lens) if value]
         return f"Shot on {' · '.join(details)}" if details else None
 

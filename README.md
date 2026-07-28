@@ -120,9 +120,10 @@ All dimensions scale from the source photo's short edge:
 | Background darkening | 20% |
 | Logo maximum height | 5% |
 
-The first line contains the camera and lens. The second contains ISO, aperture,
-shutter speed, and focal length. Missing fields are omitted instead of showing
-empty placeholders.
+The first line contains the camera and lens. For Apple photos it contains only
+the iPhone model, avoiding raw descriptions such as `back triple camera`. The
+second line contains ISO, aperture, shutter speed, and focal length. Missing
+fields are omitted instead of showing empty placeholders.
 
 ## Metadata and Privacy
 

@@ -39,6 +39,44 @@ def test_extract_and_format_metadata() -> None:
     assert metadata.exposure_line == "ISO100  |  f/5.6  |  1/500s  |  150mm"
 
 
+def test_apple_shot_on_line_uses_camera_model_only() -> None:
+    exif = piexif.dump(
+        {
+            "0th": {
+                piexif.ImageIFD.Make: b"Apple",
+                piexif.ImageIFD.Model: b"iPhone 15 Pro",
+            },
+            "Exif": {
+                piexif.ExifIFD.LensModel: (b"iPhone 15 Pro back triple camera 6.765mm f/1.78"),
+            },
+            "GPS": {},
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
+
+    metadata = extract_metadata(exif)
+
+    assert metadata.lens == "iPhone 15 Pro back triple camera 6.765mm f/1.78"
+    assert metadata.shot_on_line == "Shot on iPhone 15 Pro"
+
+
+def test_apple_lens_without_camera_model_does_not_create_shot_on_line() -> None:
+    exif = piexif.dump(
+        {
+            "0th": {piexif.ImageIFD.Make: b"Apple"},
+            "Exif": {
+                piexif.ExifIFD.LensModel: b"iPhone back triple camera",
+            },
+            "GPS": {},
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
+
+    assert extract_metadata(exif).shot_on_line is None
+
+
 def test_sanitize_exif_removes_sensitive_values_and_updates_dimensions() -> None:
     cleaned = sanitize_exif(sample_exif(), width=6400, height=4800)
     assert cleaned is not None
