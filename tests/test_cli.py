@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import piexif
+import pytest
 from PIL import Image
 
 from auto_shotframe.cli import main
@@ -25,6 +26,31 @@ def create_jpeg(path: Path, color: tuple[int, int, int]) -> None:
         }
     )
     Image.new("RGB", (160, 100), color).save(path, exif=exif)
+
+
+def create_apple_heic(path: Path) -> None:
+    exif = piexif.dump(
+        {
+            "0th": {
+                piexif.ImageIFD.Make: b"Apple",
+                piexif.ImageIFD.Model: b"iPhone 17 Pro",
+            },
+            "Exif": {
+                piexif.ExifIFD.LensModel: b"iPhone 17 Pro back triple camera",
+                piexif.ExifIFD.ISOSpeedRatings: 64,
+                piexif.ExifIFD.FNumber: (18, 10),
+                piexif.ExifIFD.ExposureTime: (1, 120),
+                piexif.ExifIFD.FocalLength: (24, 5),
+            },
+            "GPS": {
+                piexif.GPSIFD.GPSLatitudeRef: b"N",
+                piexif.GPSIFD.GPSLatitude: ((31, 1), (14, 1), (0, 1)),
+            },
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
+    Image.new("RGB", (160, 100), (35, 95, 150)).save(path, format="HEIF", exif=exif)
 
 
 def test_single_file_cli_creates_sibling_and_preserves_source(tmp_path: Path) -> None:
@@ -68,3 +94,24 @@ def test_directory_with_only_generated_files_is_a_successful_noop(
 ) -> None:
     create_jpeg(tmp_path / "old_framed.jpg", (10, 20, 30))
     assert main([str(tmp_path)]) == 0
+
+
+@pytest.mark.parametrize("suffix", [".HEIC", ".heif"])
+def test_apple_heif_creates_jpeg_with_sanitized_exif(
+    tmp_path: Path,
+    suffix: str,
+) -> None:
+    source = tmp_path / f"IMG_0001{suffix}"
+    create_apple_heic(source)
+    original_bytes = source.read_bytes()
+
+    assert main([str(source)]) == 0
+    output = tmp_path / "IMG_0001_framed.jpg"
+    assert output.is_file()
+    assert source.read_bytes() == original_bytes
+
+    with Image.open(output) as framed:
+        assert framed.format == "JPEG"
+        cleaned = piexif.load(framed.info["exif"])
+        assert cleaned["0th"][piexif.ImageIFD.Make] == b"Apple"
+        assert cleaned["GPS"] == {}

@@ -9,14 +9,15 @@ Apply three changes to the unreleased `auto-shotframe` 0.1.0 package:
 
 1. replace Inter with Jost for a more geometric, vintage-modern photographic
    presentation;
-2. add Apple as the eighth recognized camera manufacturer.
+2. add Apple as the eighth recognized camera manufacturer;
 3. accept iPhone-default HEIC and HEIF photos as inputs.
 
 PNG input remains out of scope.
 
 ## Typography
 
-- Bundle Jost Light and Jost Regular under the SIL Open Font License 1.1.
+- Bundle the Jost variable font under the SIL Open Font License 1.1 and
+  instantiate its weight axis at 300 (Light) and 400 (Regular).
 - Use Jost Light for the `Shot on` line.
 - Use Jost Regular for the exposure line and manufacturer-name fallback.
 - Add letter spacing equal to approximately 4% of the font size on the first
@@ -72,7 +73,7 @@ PNG input remains out of scope.
 - Update the visual smoke test to exercise Jost.
 - Update README and third-party notices.
 - Rebuild sdist and wheel and verify that:
-  - both Jost font weights are present;
+  - the Jost variable font is present and both required weights render;
   - Inter is absent;
   - Apple SVG and PNG are present;
   - the installed command renders an Apple-tagged HEIC successfully.

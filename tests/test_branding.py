@@ -7,6 +7,8 @@ from auto_shotframe.branding import BRANDS, load_logo, normalize_manufacturer
 @pytest.mark.parametrize(
     ("make", "expected"),
     [
+        ("Apple", "Apple"),
+        ("Apple Computer, Inc.", "Apple"),
         ("NIKON CORPORATION", "Nikon"),
         ("Canon Inc.", "Canon"),
         ("SONY", "Sony"),

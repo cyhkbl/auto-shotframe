@@ -7,6 +7,7 @@ import uuid
 from pathlib import Path
 
 from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
 
 from auto_shotframe import __version__
 from auto_shotframe.frame import FrameOptions, render_frame
@@ -14,17 +15,19 @@ from auto_shotframe.metadata import extract_metadata, sanitize_exif
 from auto_shotframe.naming import (
     count_generated_inputs,
     discover_inputs,
-    is_jpeg,
+    is_supported_image,
     next_output_path,
 )
+
+register_heif_opener()
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="auto-shotframe",
-        description="Add a blurred EXIF frame to JPEG photos.",
+        description="Add a blurred EXIF frame to JPEG and HEIF photos.",
     )
-    parser.add_argument("input", type=Path, help="a JPEG file or a directory")
+    parser.add_argument("input", type=Path, help="a JPEG/HEIC/HEIF file or a directory")
     parser.add_argument("--quality", type=int, default=95, help="JPEG quality (1-100)")
     parser.add_argument(
         "--margin",
@@ -119,8 +122,8 @@ def _validate_args(
 ) -> FrameOptions:
     if not args.input.exists():
         parser.error(f"input does not exist: {args.input}")
-    if args.input.is_file() and not is_jpeg(args.input):
-        parser.error("input file must have a .jpg or .jpeg extension")
+    if args.input.is_file() and not is_supported_image(args.input):
+        parser.error("input file must have a .jpg, .jpeg, .heic, or .heif extension")
     if args.quality < 1 or args.quality > 100:
         parser.error("quality must be between 1 and 100")
     if args.logo_dir is not None and not args.logo_dir.is_dir():
@@ -149,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         if skipped:
             print(f"summary: 0 created, {skipped} skipped, 0 failed")
             return 0
-        print("error: no eligible JPEG files found", file=sys.stderr)
+        print("error: no eligible JPEG or HEIF files found", file=sys.stderr)
         return 2
 
     succeeded = 0

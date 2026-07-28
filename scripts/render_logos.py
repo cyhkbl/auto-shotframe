@@ -17,6 +17,7 @@ SVG_DIR = ROOT / "src" / "auto_shotframe" / "assets" / "logos" / "svg"
 PNG_DIR = ROOT / "src" / "auto_shotframe" / "assets" / "logos" / "png"
 
 COLORS = {
+    "apple": "#FFFFFF",
     "canon": "#CC0000",
     "fujifilm": "#FFFFFF",
     "hasselblad": "#FFFFFF",

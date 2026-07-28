@@ -87,12 +87,55 @@ def _cover(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     return resized.crop((left, top, left + target_width, top + target_height))
 
 
-def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    asset = resources.files("auto_shotframe.assets").joinpath("fonts", "Inter-Regular.ttf")
+def _load_font(
+    size: int,
+    *,
+    weight: int = 400,
+) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    asset = resources.files("auto_shotframe.assets").joinpath("fonts", "Jost-Variable.ttf")
     if asset.is_file():
         with asset.open("rb") as handle:
-            return ImageFont.truetype(BytesIO(handle.read()), size=max(1, size))
+            font = ImageFont.truetype(BytesIO(handle.read()), size=max(1, size))
+        font.set_variation_by_axes([weight])
+        return font
     return ImageFont.load_default(size=max(1, size))
+
+
+def _tracked_text_length(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    *,
+    font: ImageFont.ImageFont,
+    tracking: int,
+) -> float:
+    glyph_width = sum(draw.textlength(character, font=font) for character in text)
+    return glyph_width + max(0, len(text) - 1) * tracking
+
+
+def _draw_tracked_text(
+    draw: ImageDraw.ImageDraw,
+    position: tuple[float, float],
+    text: str,
+    *,
+    font: ImageFont.ImageFont,
+    tracking: int,
+    fill: tuple[int, int, int, int],
+    stroke_width: int,
+    stroke_fill: tuple[int, int, int, int],
+) -> None:
+    cursor_x, y = position
+    for index, character in enumerate(text):
+        draw.text(
+            (cursor_x, y),
+            character,
+            font=font,
+            fill=fill,
+            stroke_width=stroke_width,
+            stroke_fill=stroke_fill,
+        )
+        cursor_x += draw.textlength(character, font=font)
+        if index < len(text) - 1:
+            cursor_x += tracking
 
 
 def _fit_font(
@@ -102,14 +145,17 @@ def _fit_font(
     max_width: int,
     start_size: int,
     min_size: int,
-) -> ImageFont.ImageFont:
+    weight: int,
+    tracking_ratio: float,
+) -> tuple[ImageFont.ImageFont, int]:
     size = max(start_size, min_size)
     while size > min_size:
-        font = _load_font(size)
-        if draw.textlength(text, font=font) <= max_width:
-            return font
+        font = _load_font(size, weight=weight)
+        tracking = round(size * tracking_ratio)
+        if _tracked_text_length(draw, text, font=font, tracking=tracking) <= max_width:
+            return font, tracking
         size -= 1
-    return _load_font(min_size)
+    return _load_font(min_size, weight=weight), round(min_size * tracking_ratio)
 
 
 def _scaled_logo(logo: Image.Image, max_width: int, max_height: int) -> Image.Image:
@@ -187,15 +233,19 @@ def render_frame(
                 rendered.append((kind, value, value.height))
                 continue
             start = round((0.026 if kind in {"brand", "line_one"} else 0.021) * layout.short_edge)
-            font = _fit_font(
+            weight = 300 if kind == "line_one" else 400
+            tracking_ratio = 0.04 if kind in {"brand", "line_one"} else 0.02
+            font, tracking = _fit_font(
                 draw,
                 str(value),
                 max_width=max_text_width,
                 start_size=max(6, start),
                 min_size=max(5, round(0.012 * layout.short_edge)),
+                weight=weight,
+                tracking_ratio=tracking_ratio,
             )
             bbox = draw.textbbox((0, 0), str(value), font=font)
-            rendered.append((kind, (str(value), font), bbox[3] - bbox[1]))
+            rendered.append((kind, (str(value), font, tracking), bbox[3] - bbox[1]))
 
         total_height = sum(height for _, _, height in rendered) + gap * (len(rendered) - 1)
         cursor_y = layout.info_y + max(0, (layout.info_height - total_height) // 2)
@@ -205,13 +255,15 @@ def render_frame(
                 x = (layout.canvas_width - logo_image.width) // 2
                 canvas.alpha_composite(logo_image, (x, cursor_y))
             else:
-                text, font = value
-                text_width = round(draw.textlength(text, font=font))
-                x = (layout.canvas_width - text_width) // 2
-                draw.text(
+                text, font, tracking = value
+                text_width = _tracked_text_length(draw, text, font=font, tracking=tracking)
+                x = (layout.canvas_width - text_width) / 2
+                _draw_tracked_text(
+                    draw,
                     (x, cursor_y),
                     text,
                     font=font,
+                    tracking=tracking,
                     fill=(240, 240, 240, 235),
                     stroke_width=1,
                     stroke_fill=(0, 0, 0, 90),

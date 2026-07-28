@@ -15,6 +15,7 @@ class Brand:
 
 
 BRANDS = (
+    Brand("Apple", "apple", ("APPLE", "APPLE COMPUTER, INC.")),
     Brand("Nikon", "nikon", ("NIKON", "NIKON CORPORATION")),
     Brand("Canon", "canon", ("CANON", "CANON INC.", "CANON INC")),
     Brand("Sony", "sony", ("SONY", "SONY CORPORATION")),

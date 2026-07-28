@@ -1,7 +1,7 @@
-from PIL import Image, ImageStat
+from PIL import Image, ImageDraw, ImageStat
 
 from auto_shotframe.branding import normalize_manufacturer
-from auto_shotframe.frame import FrameOptions, render_frame
+from auto_shotframe.frame import FrameOptions, _fit_font, _tracked_text_length, render_frame
 from auto_shotframe.metadata import PhotoMetadata
 
 
@@ -34,3 +34,21 @@ def test_reference_style_visual_ranges() -> None:
     info = framed.crop((0, 416, 624, 504))
     extrema = ImageStat.Stat(info).extrema
     assert max(channel[1] - channel[0] for channel in extrema) > 150
+
+
+def test_jost_tracking_is_included_in_fit_width() -> None:
+    canvas = Image.new("RGB", (400, 100))
+    draw = ImageDraw.Draw(canvas)
+    text = "Shot on iPhone 17 Pro"
+    font, tracking = _fit_font(
+        draw,
+        text,
+        max_width=220,
+        start_size=30,
+        min_size=10,
+        weight=300,
+        tracking_ratio=0.04,
+    )
+
+    assert tracking == round(font.size * 0.04)
+    assert _tracked_text_length(draw, text, font=font, tracking=tracking) <= 220

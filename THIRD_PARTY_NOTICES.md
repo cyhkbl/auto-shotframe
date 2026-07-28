@@ -1,20 +1,20 @@
 # Third-Party Notices
 
-## Inter
+## Jost
 
-Inter 4.1 is copyright The Inter Project Authors and is distributed under the
-SIL Open Font License 1.1. A copy of the license is bundled at
-`src/auto_shotframe/assets/fonts/Inter-LICENSE.txt`.
+Jost is copyright The Jost Project Authors and is distributed under the SIL Open
+Font License 1.1. A copy of the license is bundled at
+`src/auto_shotframe/assets/fonts/Jost-LICENSE.txt`.
 
 Source:
-https://github.com/rsms/inter/releases/tag/v4.1
+https://github.com/google/fonts/tree/6e4b84c976cadb3c49a40fd9a1c203e4f7fcf2da/ofl/jost
 
-`Inter-Regular.ttf` SHA-256:
-`40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82`
+`Jost-Variable.ttf` SHA-256:
+`6343b70971000b04c5d401c96ae08ce371086135e999d5e1e1413039c0213076`
 
 ## Simple Icons
 
-The Nikon, Sony, Fujifilm, Panasonic, and Leica SVG source files come from
+The Apple, Nikon, Sony, Fujifilm, Panasonic, and Leica SVG source files come from
 Simple Icons 16.21.0. The Simple Icons repository carries a CC0 1.0 Universal
 license. Its disclaimer notes that individual brand rights and usage guidelines
 may differ. Copies of both documents are bundled beside the logo directories.
@@ -24,6 +24,7 @@ https://github.com/simple-icons/simple-icons/releases/tag/16.21.0
 
 SHA-256:
 
+- `apple.svg`: `2a1509dccd25e6d2bc7a11a8e52941077e1a48555e192ce638699b9f083c2a7c`
 - `nikon.svg`: `f8d218c1c1188412c0975ea5815cbb3f82923af68adecf3389ae01d41215cedc`
 - `sony.svg`: `d012ec936e65a255f7b7b49a7e99c5aa7ab919fbc1487d8e09af82031c0e7090`
 - `fujifilm.svg`: `32614acc01d693ef73bfa82680f10c07d5a433d78896c013c2d6fb2b9ee379b4`

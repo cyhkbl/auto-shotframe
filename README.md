@@ -1,13 +1,13 @@
 # auto-shotframe
 
-`auto-shotframe` is a cross-platform command-line tool that turns JPEG photos
-into framed, share-ready images with a blurred background, camera branding, and
-EXIF shooting information.
+`auto-shotframe` is a cross-platform command-line tool that turns JPEG and HEIF
+photos into framed, share-ready JPEGs with a blurred background, camera
+branding, and EXIF shooting information.
 
 It reads a photo such as:
 
 ```text
-photo.jpg
+photo.heic
 ```
 
 and creates a sibling without touching the source:
@@ -20,12 +20,14 @@ If the name already exists, the next result is `photo_framed_2.jpg`.
 
 ## Features
 
-- accepts one JPEG or a directory of JPEG files;
+- accepts one JPEG, HEIC, or HEIF photo, or a directory containing them;
 - preserves the complete photo without cropping or stretching;
 - creates a proportional blurred and darkened background;
 - reads camera, lens, ISO, aperture, shutter speed, and focal length from EXIF;
-- recognizes Nikon, Canon, Sony, Fujifilm, Panasonic, Leica, and Hasselblad;
+- recognizes Apple, Nikon, Canon, Sony, Fujifilm, Panasonic, Leica, and
+  Hasselblad;
 - includes built-in manufacturer marks and supports custom PNG overrides;
+- bundles Jost and uses Light/Regular weights with photographic letter spacing;
 - removes GPS and device-identifying metadata from exported results;
 - preserves common photographic EXIF and ICC color data;
 - works on macOS, Windows, and Linux with Python 3.10 or newer.
@@ -46,13 +48,13 @@ python -m pip install .
 
 ## Usage
 
-Frame one JPEG:
+Frame one JPEG or HEIF photo:
 
 ```bash
-auto-shotframe /path/to/photo.jpg
+auto-shotframe /path/to/photo.heic
 ```
 
-Frame every JPEG in one directory:
+Frame every supported photo in one directory:
 
 ```bash
 auto-shotframe /path/to/photos/
@@ -86,6 +88,7 @@ auto-shotframe photo.jpg --quality 92 --darken 0.30 --info-height 0.25
 Pass a directory containing any of these lowercase filenames:
 
 ```text
+apple.png
 nikon.png
 canon.png
 sony.png
@@ -131,7 +134,19 @@ profile when present. It removes:
 - maker notes, which can contain vendor-specific identifiers;
 - image unique ID and camera owner name.
 
-The source JPEG is never modified.
+The source JPEG or HEIF photo is never modified.
+
+## HEIF Notes
+
+`.heic` and `.heif` inputs use the primary image in the container and always
+produce a sibling JPEG. 10-bit and 12-bit HEIF photos are rendered to an 8-bit
+SDR result. HDR gain maps, auxiliary depth images, additional container images,
+and Live Photo video are not copied to the framed output.
+
+iPhone originals commonly provide camera model, lens, ISO, aperture, shutter
+speed, and focal length through EXIF. Screenshots, social-media downloads, and
+other re-exports may have some or all of those fields removed; missing values are
+simply omitted from the frame.
 
 ## Development
 
