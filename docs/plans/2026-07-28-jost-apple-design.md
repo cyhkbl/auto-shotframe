@@ -5,14 +5,14 @@ Status: Approved
 
 ## Scope
 
-Apply two changes to the unreleased `auto-shotframe` 0.1.0 package:
+Apply three changes to the unreleased `auto-shotframe` 0.1.0 package:
 
 1. replace Inter with Jost for a more geometric, vintage-modern photographic
    presentation;
 2. add Apple as the eighth recognized camera manufacturer.
+3. accept iPhone-default HEIC and HEIF photos as inputs.
 
-PNG and HEIC input remain out of scope. Apple support applies to eligible JPEG
-files containing Apple EXIF metadata.
+PNG input remains out of scope.
 
 ## Typography
 
@@ -47,9 +47,27 @@ files containing Apple EXIF metadata.
 - If an Apple JPEG has incomplete or stripped EXIF, omit only the missing
   fields under the existing fallback rules.
 
+## HEIF and HEIC Input
+
+- Add `pillow-heif>=1.5.0` as a runtime dependency and register its Pillow
+  opener.
+- Accept `.heic` and `.heif` case-insensitively for single-file and directory
+  input.
+- Decode the primary image and read EXIF and ICC metadata through the Pillow
+  plugin.
+- Apply the same orientation, framing, privacy filtering, and collision-safe
+  output rules used for JPEG input.
+- Always create a sibling JPEG such as `IMG_0001_framed.jpg`.
+- Decode 10-bit or 12-bit HEIF input to the Pillow plugin's 8-bit RGB/RGBA
+  representation and create an 8-bit SDR JPEG.
+- Do not preserve HDR gain maps, auxiliary depth images, Live Photo video, or
+  additional images in a HEIF container.
+- Never modify the source HEIF file.
+
 ## Verification
 
 - Add Apple manufacturer-alias and bundled-asset tests.
+- Add HEIC/HEIF discovery, decode, EXIF, and CLI integration tests.
 - Add letter-spacing measurement and rendering tests.
 - Update the visual smoke test to exercise Jost.
 - Update README and third-party notices.
@@ -57,5 +75,4 @@ files containing Apple EXIF metadata.
   - both Jost font weights are present;
   - Inter is absent;
   - Apple SVG and PNG are present;
-  - the installed command renders an Apple-tagged JPEG successfully.
-
+  - the installed command renders an Apple-tagged HEIC successfully.
