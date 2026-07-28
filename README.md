@@ -1,5 +1,8 @@
 # auto-shotframe
 
+English |
+[简体中文](https://github.com/SeanYancy/auto-shotframe/blob/main/README.zh-CN.md)
+
 `auto-shotframe` is a cross-platform command-line tool that turns JPEG and HEIF
 photos into framed, share-ready JPEGs with a blurred background, camera
 branding, and EXIF shooting information.
@@ -28,13 +31,15 @@ If the name already exists, the next result is `photo_framed_2.jpg`.
   Hasselblad;
 - includes built-in manufacturer marks and supports custom PNG overrides;
 - bundles Jost and uses Light/Regular weights with photographic letter spacing;
+- creates a social-ready 2160-pixel long edge by default, drawing text only
+  after the source photo reaches its final working size;
 - removes GPS and device-identifying metadata from exported results;
 - preserves common photographic EXIF and ICC color data;
 - works on macOS, Windows, and Linux with Python 3.10 or newer.
 
 ## Installation
 
-From PyPI after the first release:
+From PyPI:
 
 ```bash
 python -m pip install auto-shotframe
@@ -63,10 +68,34 @@ auto-shotframe /path/to/photos/
 Directory processing is intentionally non-recursive. Files that already end in
 `_framed` or `_framed_N` are skipped.
 
+## Output Size
+
+The default output is optimized for social sharing. Its final framed canvas has
+a maximum long edge of 2160 pixels. Smaller photos are never enlarged. The
+source photo is resized first, then the frame, logo, and text are rendered at the
+final working size.
+
+Keep the source pixel dimensions:
+
+```bash
+auto-shotframe photo.jpg -o
+```
+
+`-o` is short for `--original-size`. It disables resizing but is not lossless:
+adding a frame still requires JPEG encoding.
+
+Choose another final-canvas limit:
+
+```bash
+auto-shotframe photo.jpg --max-long-edge 1080
+```
+
 ## Options
 
 ```text
---quality N          JPEG quality from 1 to 100; default: 95
+--quality N          JPEG quality; default: 92, or 95 with --original-size
+-o, --original-size  keep source pixel dimensions; still encodes as JPEG
+--max-long-edge N    maximum final canvas long edge; default: 2160
 --margin R           left/right margin as a short-edge ratio; default: 0.03
 --top-margin R       top margin as a short-edge ratio; default: 0.04
 --info-height R      information-area ratio; default: 0.22

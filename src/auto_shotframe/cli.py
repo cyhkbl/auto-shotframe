@@ -10,7 +10,7 @@ from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 
 from auto_shotframe import __version__
-from auto_shotframe.frame import FrameOptions, render_frame
+from auto_shotframe.frame import FrameOptions, fit_source_dimensions, render_frame
 from auto_shotframe.metadata import extract_metadata, sanitize_exif
 from auto_shotframe.naming import (
     count_generated_inputs,
@@ -21,6 +21,10 @@ from auto_shotframe.naming import (
 
 register_heif_opener()
 
+SOCIAL_MAX_LONG_EDGE = 2160
+SOCIAL_QUALITY = 92
+ORIGINAL_QUALITY = 95
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -28,7 +32,25 @@ def build_parser() -> argparse.ArgumentParser:
         description="Add a blurred EXIF frame to JPEG and HEIF photos.",
     )
     parser.add_argument("input", type=Path, help="a JPEG/HEIC/HEIF file or a directory")
-    parser.add_argument("--quality", type=int, default=95, help="JPEG quality (1-100)")
+    parser.add_argument(
+        "--quality",
+        type=int,
+        help="JPEG quality (1-100; default: 92, or 95 with --original-size)",
+    )
+    sizing = parser.add_mutually_exclusive_group()
+    sizing.add_argument(
+        "-o",
+        "--original-size",
+        action="store_true",
+        help="keep the source pixel dimensions (still re-encodes as JPEG)",
+    )
+    sizing.add_argument(
+        "--max-long-edge",
+        type=int,
+        default=SOCIAL_MAX_LONG_EDGE,
+        metavar="N",
+        help="maximum final canvas long edge (default: 2160)",
+    )
     parser.add_argument(
         "--margin",
         type=float,
@@ -74,6 +96,7 @@ def _process_photo(
     *,
     options: FrameOptions,
     quality: int,
+    max_long_edge: int | None,
     logo_dir: Path | None,
     show_logo: bool,
 ) -> Path:
@@ -86,6 +109,16 @@ def _process_photo(
             icc_profile = opened.info.get("icc_profile")
             metadata = extract_metadata(raw_exif)
             oriented = ImageOps.exif_transpose(opened).convert("RGB")
+
+        if max_long_edge is not None:
+            target_size = fit_source_dimensions(
+                oriented.width,
+                oriented.height,
+                options,
+                max_long_edge=max_long_edge,
+            )
+            if target_size != oriented.size:
+                oriented = oriented.resize(target_size, Image.Resampling.LANCZOS)
 
         framed = render_frame(
             oriented,
@@ -124,8 +157,10 @@ def _validate_args(
         parser.error(f"input does not exist: {args.input}")
     if args.input.is_file() and not is_supported_image(args.input):
         parser.error("input file must have a .jpg, .jpeg, .heic, or .heif extension")
-    if args.quality < 1 or args.quality > 100:
+    if args.quality is not None and (args.quality < 1 or args.quality > 100):
         parser.error("quality must be between 1 and 100")
+    if args.max_long_edge <= 0:
+        parser.error("max-long-edge must be greater than 0")
     if args.logo_dir is not None and not args.logo_dir.is_dir():
         parser.error(f"logo directory does not exist: {args.logo_dir}")
     options = FrameOptions(
@@ -142,10 +177,18 @@ def _validate_args(
     return options
 
 
+def _resolved_quality(args: argparse.Namespace) -> int:
+    if args.quality is not None:
+        return args.quality
+    return ORIGINAL_QUALITY if args.original_size else SOCIAL_QUALITY
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     options = _validate_args(parser, args)
+    quality = _resolved_quality(args)
+    max_long_edge = None if args.original_size else args.max_long_edge
     inputs = discover_inputs(args.input)
     skipped = count_generated_inputs(args.input)
     if not inputs:
@@ -162,7 +205,8 @@ def main(argv: list[str] | None = None) -> int:
             output = _process_photo(
                 source,
                 options=options,
-                quality=args.quality,
+                quality=quality,
+                max_long_edge=max_long_edge,
                 logo_dir=args.logo_dir,
                 show_logo=not args.no_logo,
             )

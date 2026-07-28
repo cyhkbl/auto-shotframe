@@ -1,6 +1,11 @@
 from PIL import Image
 
-from auto_shotframe.frame import FrameOptions, calculate_layout, render_frame
+from auto_shotframe.frame import (
+    FrameOptions,
+    calculate_layout,
+    fit_source_dimensions,
+    render_frame,
+)
 from auto_shotframe.metadata import PhotoMetadata
 
 EMPTY_METADATA = PhotoMetadata(
@@ -44,3 +49,28 @@ def test_render_frame_preserves_source_pixels_and_adds_canvas() -> None:
     assert result.mode == "RGB"
     assert result.size == (206, 126)
     assert result.getpixel((3, 4)) == source.getpixel((0, 0))
+
+
+def test_fit_source_dimensions_limits_landscape_final_canvas() -> None:
+    size = fit_source_dimensions(6000, 4000, FrameOptions(), max_long_edge=2160)
+    layout = calculate_layout(*size, FrameOptions())
+
+    assert size[0] < 6000
+    assert max(layout.canvas_width, layout.canvas_height) == 2160
+
+
+def test_fit_source_dimensions_limits_portrait_final_canvas() -> None:
+    size = fit_source_dimensions(3000, 4500, FrameOptions(), max_long_edge=2160)
+    layout = calculate_layout(*size, FrameOptions())
+
+    assert size[1] < 4500
+    assert max(layout.canvas_width, layout.canvas_height) == 2160
+
+
+def test_fit_source_dimensions_does_not_upscale_small_photo() -> None:
+    assert fit_source_dimensions(
+        800,
+        600,
+        FrameOptions(),
+        max_long_edge=2160,
+    ) == (800, 600)

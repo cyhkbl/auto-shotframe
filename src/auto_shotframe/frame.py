@@ -75,6 +75,45 @@ def calculate_layout(width: int, height: int, options: FrameOptions) -> Layout:
     )
 
 
+def fit_source_dimensions(
+    width: int,
+    height: int,
+    options: FrameOptions,
+    *,
+    max_long_edge: int,
+) -> tuple[int, int]:
+    if max_long_edge <= 0:
+        raise ValueError("max-long-edge must be greater than 0")
+    current = calculate_layout(width, height, options)
+    if max(current.canvas_width, current.canvas_height) <= max_long_edge:
+        return width, height
+
+    landscape = width >= height
+    dominant = width if landscape else height
+    low = 1
+    high = dominant - 1
+    best: tuple[int, int] | None = None
+
+    while low <= high:
+        candidate = (low + high) // 2
+        if landscape:
+            candidate_width = candidate
+            candidate_height = max(1, round(height * candidate / width))
+        else:
+            candidate_height = candidate
+            candidate_width = max(1, round(width * candidate / height))
+        layout = calculate_layout(candidate_width, candidate_height, options)
+        if max(layout.canvas_width, layout.canvas_height) <= max_long_edge:
+            best = candidate_width, candidate_height
+            low = candidate + 1
+        else:
+            high = candidate - 1
+
+    if best is None:
+        raise ValueError("max-long-edge is too small for the framed layout")
+    return best
+
+
 def _cover(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     target_width, target_height = size
     scale = max(target_width / image.width, target_height / image.height)
