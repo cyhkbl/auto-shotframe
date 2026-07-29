@@ -9,6 +9,25 @@ import piexif
 
 from auto_shotframe.branding import Brand, normalize_manufacturer
 
+_TIFF_ONLY_0TH_TAGS = {
+    piexif.ImageIFD.NewSubfileType,
+    piexif.ImageIFD.ImageWidth,
+    piexif.ImageIFD.ImageLength,
+    piexif.ImageIFD.BitsPerSample,
+    piexif.ImageIFD.Compression,
+    piexif.ImageIFD.PhotometricInterpretation,
+    piexif.ImageIFD.StripOffsets,
+    piexif.ImageIFD.SamplesPerPixel,
+    piexif.ImageIFD.RowsPerStrip,
+    piexif.ImageIFD.StripByteCounts,
+    piexif.ImageIFD.PlanarConfiguration,
+    piexif.ImageIFD.XMLPacket,
+    33723,  # IPTC/NAA
+    piexif.ImageIFD.ImageResources,
+    piexif.ImageIFD.ExifTag,
+    piexif.ImageIFD.InterColorProfile,
+}
+
 
 @dataclass(frozen=True)
 class PhotoMetadata:
@@ -142,24 +161,43 @@ def sanitize_exif(
     if not exif_bytes:
         return None
     exif = _load_exif(exif_bytes)
-    zeroth = exif.get("0th", {})
-    exif_ifd = exif.get("Exif", {})
+    return _sanitize_loaded_exif(exif, width=width, height=height)
 
+
+def _sanitize_loaded_exif(
+    exif: dict[str, Any],
+    *,
+    width: int,
+    height: int,
+) -> bytes | None:
+    zeroth = dict(exif.get("0th", {}))
+    exif_ifd = dict(exif.get("Exif", {}))
+
+    for tag in _TIFF_ONLY_0TH_TAGS:
+        zeroth.pop(tag, None)
     zeroth[piexif.ImageIFD.Orientation] = 1
-    exif_ifd.pop(piexif.ExifIFD.BodySerialNumber, None)
-    exif_ifd.pop(piexif.ExifIFD.LensSerialNumber, None)
-    exif_ifd.pop(piexif.ExifIFD.MakerNote, None)
-    exif_ifd.pop(piexif.ExifIFD.ImageUniqueID, None)
-    exif_ifd.pop(piexif.ExifIFD.CameraOwnerName, None)
+    for tag in (
+        piexif.ExifIFD.BodySerialNumber,
+        piexif.ExifIFD.LensSerialNumber,
+        piexif.ExifIFD.MakerNote,
+        piexif.ExifIFD.ImageUniqueID,
+        piexif.ExifIFD.CameraOwnerName,
+        piexif.ExifIFD.FileSource,
+        piexif.ExifIFD.SceneType,
+    ):
+        exif_ifd.pop(tag, None)
     exif_ifd[piexif.ExifIFD.PixelXDimension] = width
     exif_ifd[piexif.ExifIFD.PixelYDimension] = height
 
-    exif["0th"] = zeroth
-    exif["Exif"] = exif_ifd
-    exif["GPS"] = {}
-    exif["1st"] = {}
-    exif["thumbnail"] = None
+    sanitized = {
+        "0th": zeroth,
+        "Exif": exif_ifd,
+        "GPS": {},
+        "Interop": dict(exif.get("Interop", {})),
+        "1st": {},
+        "thumbnail": None,
+    }
     try:
-        return piexif.dump(exif)
+        return piexif.dump(sanitized)
     except (ValueError, TypeError):
         return None

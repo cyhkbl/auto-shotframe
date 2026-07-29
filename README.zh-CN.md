@@ -162,7 +162,8 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 - GPS 定位信息；
 - 相机和镜头序列号；
 - 可能包含厂商设备标识的 MakerNote；
-- Image Unique ID 和相机所有者名称。
+- Image Unique ID 和相机所有者名称；
+- TIFF 转 JPEG 时的存储结构字段，以及 XMP、IPTC 和 Photoshop 资源容器。
 
 源 JPEG、HEIF 或 TIFF 文件始终不会被修改。
 

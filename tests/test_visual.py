@@ -1,7 +1,13 @@
 from PIL import Image, ImageDraw, ImageStat
 
 from auto_shotframe.branding import normalize_manufacturer
-from auto_shotframe.frame import FrameOptions, _fit_font, _tracked_text_length, render_frame
+from auto_shotframe.frame import (
+    FrameOptions,
+    _fit_font,
+    _tracked_text_length,
+    calculate_layout,
+    render_frame,
+)
 from auto_shotframe.metadata import PhotoMetadata
 
 
@@ -52,3 +58,38 @@ def test_jost_tracking_is_included_in_fit_width() -> None:
 
     assert tracking == round(font.size * 0.04)
     assert _tracked_text_length(draw, text, font=font, tracking=tracking) <= 220
+
+
+def test_translucent_text_stroke_is_composited_without_pure_black_halo() -> None:
+    source = Image.new("RGB", (600, 400), "white")
+    metadata = PhotoMetadata(
+        make=None,
+        brand=None,
+        camera="TEST CAMERA",
+        lens=None,
+        iso=None,
+        aperture=None,
+        exposure_seconds=None,
+        focal_length_mm=None,
+    )
+    options = FrameOptions(
+        blur=0,
+        darken=0,
+        shadow_blur=0,
+        shadow_offset=0,
+    )
+
+    framed = render_frame(source, metadata, options=options, show_logo=False)
+    layout = calculate_layout(*source.size, options)
+    info = framed.crop(
+        (
+            0,
+            layout.info_y + 2,
+            layout.canvas_width,
+            layout.canvas_height,
+        )
+    )
+    darkest_channel = min(channel[0] for channel in ImageStat.Stat(info).extrema)
+
+    assert darkest_channel > 100
+    assert darkest_channel < 230

@@ -246,6 +246,8 @@ def render_frame(
     canvas.alpha_composite(image.convert("RGBA"), (layout.image_x, layout.image_y))
 
     draw = ImageDraw.Draw(canvas)
+    text_overlay = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
+    text_draw = ImageDraw.Draw(text_overlay)
     logo = load_logo(metadata.brand, logo_dir) if show_logo else None
     logo_height = max(1, round(options.logo_height * layout.short_edge))
     logo_max_width = max(1, round(layout.canvas_width * 0.22))
@@ -298,7 +300,7 @@ def render_frame(
                 text_width = _tracked_text_length(draw, text, font=font, tracking=tracking)
                 x = (layout.canvas_width - text_width) / 2
                 _draw_tracked_text(
-                    draw,
+                    text_draw,
                     (x, cursor_y),
                     text,
                     font=font,
@@ -308,5 +310,7 @@ def render_frame(
                     stroke_fill=(0, 0, 0, 90),
                 )
             cursor_y += element_height + gap
+
+        canvas = Image.alpha_composite(canvas, text_overlay)
 
     return canvas.convert("RGB")

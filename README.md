@@ -164,6 +164,8 @@ profile when present. It removes:
 - camera and lens serial-number fields;
 - maker notes, which can contain vendor-specific identifiers;
 - image unique ID and camera owner name.
+- TIFF storage fields plus XMP, IPTC, and Photoshop resource containers when
+  exporting a TIFF input to JPEG.
 
 The source JPEG, HEIF, or TIFF photo is never modified.
 

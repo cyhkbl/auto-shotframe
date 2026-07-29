@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import uuid
+import warnings
 from pathlib import Path
 
 from PIL import Image, ImageOps
@@ -124,8 +125,19 @@ def _process_photo(
     temporary = output.with_name(f".{output.name}.{uuid.uuid4().hex}.tmp")
     try:
         with Image.open(source) as opened:
-            opened.load()
-            raw_exif = _read_exif_bytes(opened)
+            with warnings.catch_warnings():
+                if source.suffix.lower() in {".tif", ".tiff"}:
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=(
+                            r"Metadata Warning, tag 33723 had too many entries: "
+                            r"\d+, expected 1"
+                        ),
+                        category=UserWarning,
+                        module=r"PIL\.TiffImagePlugin",
+                    )
+                opened.load()
+                raw_exif = _read_exif_bytes(opened)
             icc_profile = opened.info.get("icc_profile")
             metadata = extract_metadata(raw_exif)
             oriented = ImageOps.exif_transpose(opened).convert("RGB")
