@@ -274,7 +274,7 @@ def render_frame(
                 rendered.append((kind, value, value.height))
                 continue
             start = round((0.026 if kind in {"brand", "line_one"} else 0.021) * layout.short_edge)
-            weight = 300 if kind == "line_one" else 400
+            weight = 400
             tracking_ratio = 0.04 if kind in {"brand", "line_one"} else 0.02
             font, tracking = _fit_font(
                 draw,
@@ -305,9 +305,9 @@ def render_frame(
                     text,
                     font=font,
                     tracking=tracking,
-                    fill=(240, 240, 240, 235),
-                    stroke_width=1,
-                    stroke_fill=(0, 0, 0, 90),
+                    fill=(248, 248, 248, 255),
+                    stroke_width=0,
+                    stroke_fill=(0, 0, 0, 0),
                 )
             cursor_y += element_height + gap
 

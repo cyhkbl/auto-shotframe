@@ -60,7 +60,7 @@ def test_jost_tracking_is_included_in_fit_width() -> None:
     assert _tracked_text_length(draw, text, font=font, tracking=tracking) <= 220
 
 
-def test_translucent_text_stroke_is_composited_without_pure_black_halo() -> None:
+def test_opaque_text_has_no_dark_stroke_pixels() -> None:
     source = Image.new("RGB", (600, 400), "white")
     metadata = PhotoMetadata(
         make=None,
@@ -91,5 +91,5 @@ def test_translucent_text_stroke_is_composited_without_pure_black_halo() -> None
     )
     darkest_channel = min(channel[0] for channel in ImageStat.Stat(info).extrema)
 
-    assert darkest_channel > 100
-    assert darkest_channel < 230
+    assert darkest_channel >= 245
+    assert darkest_channel < 255
