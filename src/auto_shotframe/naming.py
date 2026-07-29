@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".heic", ".heif"}
+SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".heic", ".heif", ".tif", ".tiff"}
 _GENERATED_STEM = re.compile(r"_framed(?:_\d+)?$", re.IGNORECASE)
 
 

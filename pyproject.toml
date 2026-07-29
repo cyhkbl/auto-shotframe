@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "auto-shotframe"
 version = "0.1.0"
-description = "Create EXIF photo frames from JPEG and HEIF photos."
+description = "Create EXIF photo frames from JPEG, HEIF, and TIFF photos."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
   { name = "auto-shotframe contributors" },
 ]
-keywords = ["exif", "frame", "heic", "heif", "jpeg", "photography", "cli"]
+keywords = ["exif", "frame", "heic", "heif", "jpeg", "photography", "tiff", "cli"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",

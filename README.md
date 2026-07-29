@@ -3,8 +3,8 @@
 English |
 [简体中文](https://github.com/SeanYancy/auto-shotframe/blob/main/README.zh-CN.md)
 
-`auto-shotframe` is a cross-platform command-line tool that turns JPEG and HEIF
-photos into framed, share-ready JPEGs with a blurred background, camera
+`auto-shotframe` is a cross-platform command-line tool that turns JPEG, HEIF,
+and TIFF photos into framed, share-ready JPEGs with a blurred background, camera
 branding, and EXIF shooting information.
 
 It reads a photo such as:
@@ -23,7 +23,8 @@ If the name already exists, the next result is `photo_framed_2.jpg`.
 
 ## Features
 
-- accepts one JPEG, HEIC, or HEIF photo, or a directory containing them;
+- accepts one JPEG, HEIC, HEIF, TIF, or TIFF photo, or a directory containing
+  them;
 - preserves the complete photo without cropping or stretching;
 - creates a proportional blurred and darkened background;
 - reads camera, lens, ISO, aperture, shutter speed, and focal length from EXIF;
@@ -53,7 +54,7 @@ python -m pip install .
 
 ## Usage
 
-Frame one JPEG or HEIF photo:
+Frame one JPEG, HEIF, or TIFF photo:
 
 ```bash
 auto-shotframe /path/to/photo.heic
@@ -164,7 +165,7 @@ profile when present. It removes:
 - maker notes, which can contain vendor-specific identifiers;
 - image unique ID and camera owner name.
 
-The source JPEG or HEIF photo is never modified.
+The source JPEG, HEIF, or TIFF photo is never modified.
 
 ## HEIF Notes
 
@@ -177,6 +178,18 @@ iPhone originals commonly provide camera model, lens, ISO, aperture, shutter
 speed, and focal length through EXIF. Screenshots, social-media downloads, and
 other re-exports may have some or all of those fields removed; missing values are
 simply omitted from the frame.
+
+## TIFF Notes
+
+`.tif` and `.tiff` inputs use the first image and always produce a sibling JPEG.
+Camera-exported TIFF metadata is read from TIFF IFD/EXIF fields when Pillow
+exposes it. Multi-page TIFF files use only their first page.
+
+The current output pipeline is intentionally not lossless: 16-bit TIFF data is
+flattened to an 8-bit RGB JPEG. `-o/--original-size` prevents pixel resizing but
+does not preserve TIFF bit depth or compression. Unsupported TIFF compression
+variants and damaged files are reported without stopping the remaining files in
+a directory batch.
 
 ## Development
 

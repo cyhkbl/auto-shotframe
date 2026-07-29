@@ -3,7 +3,7 @@
 [English](https://github.com/SeanYancy/auto-shotframe/blob/main/README.md) |
 简体中文
 
-`auto-shotframe` 是一款跨平台命令行工具，可以给 JPEG、HEIC 和 HEIF
+`auto-shotframe` 是一款跨平台命令行工具，可以给 JPEG、HEIC、HEIF 和 TIFF
 照片添加适合分享的摄影相框。成品包含模糊背景、相机品牌标志以及从 EXIF
 读取的拍摄参数。
 
@@ -24,7 +24,7 @@ photo_framed.jpg
 
 ## 功能
 
-- 支持单张 JPEG、HEIC、HEIF 照片，也支持处理一个目录；
+- 支持单张 JPEG、HEIC、HEIF、TIF、TIFF 照片，也支持处理一个目录；
 - 完整保留照片内容，不裁切、不拉伸；
 - 按照片比例生成模糊、压暗的延展背景；
 - 从 EXIF 读取相机、镜头、ISO、光圈、快门和焦距；
@@ -54,7 +54,7 @@ python -m pip install .
 
 ## 基本用法
 
-处理一张 JPEG 或 HEIF 照片：
+处理一张 JPEG、HEIF 或 TIFF 照片：
 
 ```bash
 auto-shotframe /path/to/photo.heic
@@ -164,7 +164,7 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 - 可能包含厂商设备标识的 MakerNote；
 - Image Unique ID 和相机所有者名称。
 
-源 JPEG 或 HEIF 文件始终不会被修改。
+源 JPEG、HEIF 或 TIFF 文件始终不会被修改。
 
 ## HEIF 说明
 
@@ -174,6 +174,17 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 
 iPhone 原片通常包含机型、镜头、ISO、光圈、快门和焦距。截图、社交平台下载图
 或其他二次导出文件可能已经删除部分或全部 EXIF；工具只显示实际存在的信息。
+
+## TIFF 说明
+
+`.tif` 和 `.tiff` 输入会读取第一张图像，并始终输出同目录 JPEG。相机导出的
+TIFF 如果能被 Pillow 读取，工具会从 TIFF IFD/EXIF 字段提取拍摄参数。多页
+TIFF 只处理第一页。
+
+当前输出流程不是无损流程：16-bit TIFF 会转换为 8-bit RGB JPEG。
+`-o/--original-size` 只是不缩放像素尺寸，并不会保留 TIFF 位深或压缩方式。
+遇到不支持的 TIFF 压缩格式或损坏文件时，工具会报告该文件，并继续处理目录中
+的其他照片。
 
 ## 开发
 

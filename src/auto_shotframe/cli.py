@@ -29,9 +29,13 @@ ORIGINAL_QUALITY = 95
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="auto-shotframe",
-        description="Add a blurred EXIF frame to JPEG and HEIF photos.",
+        description="Add a blurred EXIF frame to JPEG, HEIF, and TIFF photos.",
     )
-    parser.add_argument("input", type=Path, help="a JPEG/HEIC/HEIF file or a directory")
+    parser.add_argument(
+        "input",
+        type=Path,
+        help="a JPEG/HEIC/HEIF/TIFF file or a directory",
+    )
     parser.add_argument(
         "--quality",
         type=int,
@@ -91,6 +95,22 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _read_exif_bytes(image: Image.Image) -> bytes | None:
+    raw_exif = image.info.get("exif")
+    if isinstance(raw_exif, bytes):
+        return raw_exif
+    if isinstance(raw_exif, bytearray):
+        return bytes(raw_exif)
+
+    exif = image.getexif()
+    if not exif:
+        return None
+    try:
+        return exif.tobytes()
+    except (OSError, TypeError, ValueError):
+        return None
+
+
 def _process_photo(
     source: Path,
     *,
@@ -105,7 +125,7 @@ def _process_photo(
     try:
         with Image.open(source) as opened:
             opened.load()
-            raw_exif = opened.info.get("exif")
+            raw_exif = _read_exif_bytes(opened)
             icc_profile = opened.info.get("icc_profile")
             metadata = extract_metadata(raw_exif)
             oriented = ImageOps.exif_transpose(opened).convert("RGB")
@@ -156,7 +176,9 @@ def _validate_args(
     if not args.input.exists():
         parser.error(f"input does not exist: {args.input}")
     if args.input.is_file() and not is_supported_image(args.input):
-        parser.error("input file must have a .jpg, .jpeg, .heic, or .heif extension")
+        parser.error(
+            "input file must have a .jpg, .jpeg, .heic, .heif, .tif, or .tiff extension"
+        )
     if args.quality is not None and (args.quality < 1 or args.quality > 100):
         parser.error("quality must be between 1 and 100")
     if args.max_long_edge <= 0:
@@ -195,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
         if skipped:
             print(f"summary: 0 created, {skipped} skipped, 0 failed")
             return 0
-        print("error: no eligible JPEG or HEIF files found", file=sys.stderr)
+        print("error: no eligible JPEG, HEIF, or TIFF files found", file=sys.stderr)
         return 2
 
     succeeded = 0
