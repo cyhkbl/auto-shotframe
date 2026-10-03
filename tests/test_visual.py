@@ -35,7 +35,7 @@ def test_reference_style_visual_ranges() -> None:
     framed = render_frame(source, metadata, options=FrameOptions())
     layout = calculate_layout(*source.size, FrameOptions())
 
-    assert framed.size == (624, 504)
+    assert framed.size == (684, 540)
     # Sample past the rounded corner, so the pixel still belongs to the photo.
     inset = layout.corner_radius + 2
     assert (

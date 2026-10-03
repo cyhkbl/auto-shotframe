@@ -101,10 +101,10 @@ auto-shotframe photo.jpg --max-long-edge 1080
 --quality N          JPEG 质量 1–100；默认 92，原尺寸模式默认 95
 -o, --original-size  保留原图像素尺寸，但仍会重新编码 JPEG
 --max-long-edge N    最终相框画布的最大长边；默认 2160
---margin R           左右边距相对照片短边的比例；默认 0.03
---top-margin R       顶部边距比例；默认 0.04
+--margin R           左右边距相对照片短边的比例；默认 0.105
+--top-margin R       顶部边距比例；默认 0.130
 --info-height R      底部信息区高度比例；默认 0.22
---corner-radius R    照片圆角半径比例；默认 0
+--corner-radius R    照片圆角半径比例；默认 0.040
 --blur R             背景模糊半径比例；默认 0.03
 --darken R           背景压暗程度 0–1；默认 0.20
 --logo-dir PATH      自定义小写 PNG Logo 所在目录
@@ -149,19 +149,19 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 
 | 元素 | 默认值 |
 | --- | ---: |
-| 左右边距 | 3% |
-| 顶部边距 | 4% |
+| 左右边距 | 10.5% |
+| 顶部边距 | 13% |
 | 底部信息区 | 22% |
-| 照片圆角半径 | 0%（直角） |
+| 照片圆角半径 | 4% |
 | 背景模糊半径 | 3% |
 | 背景压暗 | 20% |
 | Logo 最大高度 | 5% |
 
-照片从左、右、上三边按边距内缩，底部留给信息区。默认是直角，需要圆角就传
-`--corner-radius`；想让模糊背景露得更多就把边距调大：
+照片从左、右、上三边按边距内缩，底部留给信息区。本版本默认使用较宽的圆角
+相框，让模糊背景露得更多；想要更紧凑、更接近上游默认的直角相框就传更小的值：
 
 ```bash
-auto-shotframe photo.jpg --margin 0.06 --top-margin 0.075 --corner-radius 0.025
+auto-shotframe photo.jpg --margin 0.03 --top-margin 0.04 --corner-radius 0
 ```
 
 第一行显示相机与镜头。Apple 照片只显示 iPhone 型号，不会把

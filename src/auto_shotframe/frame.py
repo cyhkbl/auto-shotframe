@@ -13,15 +13,15 @@ from auto_shotframe.metadata import PhotoMetadata
 
 @dataclass(frozen=True)
 class FrameOptions:
-    margin: float = 0.03
-    top_margin: float = 0.04
+    margin: float = 0.105
+    top_margin: float = 0.130
     info_height: float = 0.22
     blur: float = 0.03
     darken: float = 0.20
     shadow_blur: float = 0.015
     shadow_offset: float = 0.008
     logo_height: float = 0.05
-    corner_radius: float = 0.0
+    corner_radius: float = 0.040
 
     def validate(self) -> None:
         for name in (

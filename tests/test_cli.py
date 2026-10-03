@@ -107,7 +107,7 @@ def test_single_file_cli_creates_sibling_and_preserves_source(tmp_path: Path) ->
     assert source.read_bytes() == original_bytes
 
     with Image.open(output) as framed:
-        assert framed.size == (166, 126)
+        assert framed.size == (180, 135)
         cleaned = piexif.load(framed.info["exif"])
         assert cleaned["GPS"] == {}
 
@@ -254,7 +254,7 @@ def test_social_original_and_custom_output_sizes(tmp_path: Path) -> None:
 
     assert main([str(source), "-o", "--no-logo"]) == 0
     with Image.open(tmp_path / "large_framed_2.jpg") as original:
-        assert original.size == (2496, 2016)
+        assert original.size == (2736, 2160)
 
     assert main([str(source), "--max-long-edge", "1000", "--no-logo"]) == 0
     with Image.open(tmp_path / "large_framed_3.jpg") as custom:

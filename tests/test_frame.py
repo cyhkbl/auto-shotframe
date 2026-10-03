@@ -22,20 +22,20 @@ EMPTY_METADATA = PhotoMetadata(
 
 def test_default_horizontal_layout() -> None:
     layout = calculate_layout(6000, 4000, FrameOptions())
-    assert layout.canvas_width == 6240
-    assert layout.canvas_height == 5040
-    assert layout.image_x == 120
-    assert layout.image_y == 160
+    assert layout.canvas_width == 6840
+    assert layout.canvas_height == 5400
+    assert layout.image_x == 420
+    assert layout.image_y == 520
     assert layout.info_height == 880
-    assert layout.corner_radius == 0
+    assert layout.corner_radius == 160
 
 
 def test_default_vertical_layout() -> None:
     layout = calculate_layout(3000, 4500, FrameOptions())
-    assert layout.canvas_width == 3180
-    assert layout.canvas_height == 5280
-    assert layout.image_x == 90
-    assert layout.image_y == 120
+    assert layout.canvas_width == 3630
+    assert layout.canvas_height == 5550
+    assert layout.image_x == 315
+    assert layout.image_y == 390
     assert layout.info_height == 660
 
 
@@ -94,8 +94,13 @@ def test_render_frame_preserves_source_pixels_and_adds_canvas() -> None:
     layout = calculate_layout(200, 100, options)
 
     assert result.mode == "RGB"
-    assert result.size == (206, 126)
-    assert result.getpixel((layout.image_x, layout.image_y)) == source.getpixel((0, 0))
+    assert result.size == (220, 135)
+    # Sample past the rounded corner, where the pixel still belongs to the photo.
+    inset = layout.corner_radius + 2
+    assert (
+        result.getpixel((layout.image_x + inset, layout.image_y + inset))
+        == source.getpixel((0, 0))
+    )
 
 
 def test_fit_source_dimensions_limits_landscape_final_canvas() -> None:

@@ -59,14 +59,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--margin",
         type=float,
-        default=0.03,
-        help="left/right margin as a short-edge ratio (default: 0.03)",
+        default=0.105,
+        help="left/right margin as a short-edge ratio (default: 0.105)",
     )
     parser.add_argument(
         "--top-margin",
         type=float,
-        default=0.04,
-        help="top margin as a short-edge ratio (default: 0.04)",
+        default=0.130,
+        help="top margin as a short-edge ratio (default: 0.130)",
     )
     parser.add_argument(
         "--info-height",
@@ -77,8 +77,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--corner-radius",
         type=float,
-        default=0.0,
-        help="photo corner radius as a short-edge ratio, 0 for square (default: 0)",
+        default=0.040,
+        help="photo corner radius as a short-edge ratio, 0 for square (default: 0.040)",
     )
     parser.add_argument(
         "--blur",

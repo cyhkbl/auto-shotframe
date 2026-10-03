@@ -101,10 +101,10 @@ auto-shotframe photo.jpg --max-long-edge 1080
 --quality N          JPEG quality; default: 92, or 95 with --original-size
 -o, --original-size  keep source pixel dimensions; still encodes as JPEG
 --max-long-edge N    maximum final canvas long edge; default: 2160
---margin R           left/right margin as a short-edge ratio; default: 0.03
---top-margin R       top margin as a short-edge ratio; default: 0.04
+--margin R           left/right margin as a short-edge ratio; default: 0.105
+--top-margin R       top margin as a short-edge ratio; default: 0.130
 --info-height R      information-area ratio; default: 0.22
---corner-radius R    photo corner radius as a short-edge ratio; default: 0
+--corner-radius R    photo corner radius as a short-edge ratio; default: 0.040
 --blur R             blur radius ratio; default: 0.03
 --darken R           background darkening from 0 to 1; default: 0.20
 --logo-dir PATH      directory containing custom lowercase PNG logos
@@ -149,21 +149,22 @@ All dimensions scale from the source photo's short edge:
 
 | Element | Default |
 | --- | ---: |
-| Left/right margin | 3% |
-| Top margin | 4% |
+| Left/right margin | 10.5% |
+| Top margin | 13% |
 | Bottom information area | 22% |
-| Photo corner radius | 0% (square) |
+| Photo corner radius | 4% |
 | Background blur radius | 3% |
 | Background darkening | 20% |
 | Logo maximum height | 5% |
 
 The photo is inset by the margin on the left, right, and top, and the
-information area occupies the bottom. Corners are square by default; pass
-`--corner-radius` to round them, and raise the margins to show more of the
-blurred background:
+information area occupies the bottom. This build defaults to a wide, rounded
+frame that leaves plenty of blurred background; pass smaller values for a
+tighter, squarer frame:
 
 ```bash
-auto-shotframe photo.jpg --margin 0.06 --top-margin 0.075 --corner-radius 0.025
+# tighter frame, closer to upstream defaults
+auto-shotframe photo.jpg --margin 0.03 --top-margin 0.04 --corner-radius 0
 ```
 
 The first line contains the camera and lens. For Apple photos it contains only
