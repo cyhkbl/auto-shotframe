@@ -23,6 +23,7 @@ COLORS = {
     "hasselblad": "#FFFFFF",
     "leica": "#FFFFFF",
     "nikon": "#111111",
+    "oneplus": "#EB0027",
     "panasonic": "#FFFFFF",
     "sony": "#FFFFFF",
 }

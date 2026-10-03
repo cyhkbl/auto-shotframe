@@ -7,7 +7,7 @@ from typing import Any
 
 import piexif
 
-from auto_shotframe.branding import Brand, normalize_manufacturer
+from auto_shotframe.branding import Brand, display_model_name, normalize_manufacturer
 
 _TIFF_ONLY_0TH_TAGS = {
     piexif.ImageIFD.NewSubfileType,
@@ -41,10 +41,16 @@ class PhotoMetadata:
     focal_length_mm: float | None
 
     @property
+    def display_camera(self) -> str | None:
+        """Camera name for the frame caption, with internal model codes expanded."""
+        return display_model_name(self.brand, self.camera)
+
+    @property
     def shot_on_line(self) -> str | None:
+        camera = self.display_camera
         if self.brand is not None and self.brand.slug == "apple":
-            return f"Shot on {self.camera}" if self.camera else None
-        details = [value for value in (self.camera, self.lens) if value]
+            return f"Shot on {camera}" if camera else None
+        details = [value for value in (camera, self.lens) if value]
         return f"Shot on {' · '.join(details)}" if details else None
 
     @property

@@ -28,8 +28,10 @@ photo_framed.jpg
 - 完整保留照片内容，不裁切、不拉伸；
 - 按照片比例生成模糊、压暗的延展背景；
 - 从 EXIF 读取相机、镜头、ISO、光圈、快门和焦距；
-- 识别 Apple、Nikon、Canon、Sony、Fujifilm、Panasonic、Leica 和
-  Hasselblad；
+- 识别 Apple、Nikon、Canon、Sony、Fujifilm、Panasonic、Leica、Hasselblad
+  和 OnePlus；
+- 把 OnePlus `KB2000` 这类内部型号代码展开成市售名称（`OnePlus 8T`），
+  只影响画面文字，不改动 EXIF；
 - 内置厂商标志，也可以用自己的透明 PNG 覆盖；
 - 使用 Jost Light/Regular 字重和适合摄影排版的字距；
 - 默认生成长边不超过 2160 像素的社交媒体版本；
@@ -127,6 +129,7 @@ fujifilm.png
 panasonic.png
 leica.png
 hasselblad.png
+oneplus.png
 ```
 
 推荐使用透明背景 PNG：
@@ -154,6 +157,20 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 第一行显示相机与镜头。Apple 照片只显示 iPhone 型号，不会把
 `back triple camera` 之类的原始 EXIF 文本放进画面。第二行显示 ISO、光圈、
 快门和焦距。缺少的字段会被直接省略，不会留下空占位。
+
+部分厂商会在 EXIF 里写入内部型号代码而不是产品名。工具只把这些代码展开成
+市售名称，导出照片的 EXIF 仍然保留原值：
+
+| EXIF Make | EXIF Model | 画面显示 |
+| --- | --- | --- |
+| `OnePlus` | `KB2000` | `OnePlus 8T` |
+| `OnePlus` | `KB2001` | `OnePlus 8T` |
+| `OnePlus` | `KB2003` | `OnePlus 8T` |
+| `OnePlus` | `KB2005` | `OnePlus 8T` |
+| `OnePlus` | `KB2007` | `OnePlus 8T+ 5G` |
+
+厂商识别不区分大小写，也会忽略首尾空白，因此 `OnePlus`、`ONEPLUS` 和
+`oneplus` 都能识别。
 
 ## 元数据与隐私
 

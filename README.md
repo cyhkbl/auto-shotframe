@@ -28,8 +28,10 @@ If the name already exists, the next result is `photo_framed_2.jpg`.
 - preserves the complete photo without cropping or stretching;
 - creates a proportional blurred and darkened background;
 - reads camera, lens, ISO, aperture, shutter speed, and focal length from EXIF;
-- recognizes Apple, Nikon, Canon, Sony, Fujifilm, Panasonic, Leica, and
-  Hasselblad;
+- recognizes Apple, Nikon, Canon, Sony, Fujifilm, Panasonic, Leica,
+  Hasselblad, and OnePlus;
+- expands internal model codes such as OnePlus `KB2000` into the marketed name
+  (`OnePlus 8T`) for the caption only, leaving EXIF untouched;
 - includes built-in manufacturer marks and supports custom PNG overrides;
 - bundles Jost and uses Light/Regular weights with photographic letter spacing;
 - creates a social-ready 2160-pixel long edge by default, drawing text only
@@ -126,6 +128,7 @@ fujifilm.png
 panasonic.png
 leica.png
 hasselblad.png
+oneplus.png
 ```
 
 Transparent PNG files work best:
@@ -154,6 +157,21 @@ The first line contains the camera and lens. For Apple photos it contains only
 the iPhone model, avoiding raw descriptions such as `back triple camera`. The
 second line contains ISO, aperture, shutter speed, and focal length. Missing
 fields are omitted instead of showing empty placeholders.
+
+Some manufacturers record an internal code instead of the product name. Those
+codes are expanded for the caption while the exported EXIF keeps the original
+value:
+
+| EXIF Make | EXIF Model | Caption |
+| --- | --- | --- |
+| `OnePlus` | `KB2000` | `OnePlus 8T` |
+| `OnePlus` | `KB2001` | `OnePlus 8T` |
+| `OnePlus` | `KB2003` | `OnePlus 8T` |
+| `OnePlus` | `KB2005` | `OnePlus 8T` |
+| `OnePlus` | `KB2007` | `OnePlus 8T+ 5G` |
+
+Brand matching ignores letter case and surrounding whitespace, so `OnePlus`,
+`ONEPLUS`, and `oneplus` are all recognized.
 
 ## Metadata and Privacy
 
