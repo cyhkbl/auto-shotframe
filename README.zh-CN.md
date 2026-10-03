@@ -27,6 +27,7 @@ photo_framed.jpg
 - 支持单张 JPEG、HEIC、HEIF、TIF、TIFF 照片，也支持处理一个目录；
 - 完整保留照片内容，不裁切、不拉伸；
 - 按照片比例生成模糊、压暗的延展背景；
+- 可选圆角照片，投影也跟随圆角轮廓；
 - 从 EXIF 读取相机、镜头、ISO、光圈、快门和焦距；
 - 识别 Apple、Nikon、Canon、Sony、Fujifilm、Panasonic、Leica、Hasselblad
   和 OnePlus；
@@ -103,6 +104,7 @@ auto-shotframe photo.jpg --max-long-edge 1080
 --margin R           左右边距相对照片短边的比例；默认 0.03
 --top-margin R       顶部边距比例；默认 0.04
 --info-height R      底部信息区高度比例；默认 0.22
+--corner-radius R    照片圆角半径比例；默认 0
 --blur R             背景模糊半径比例；默认 0.03
 --darken R           背景压暗程度 0–1；默认 0.20
 --logo-dir PATH      自定义小写 PNG Logo 所在目录
@@ -150,9 +152,17 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 | 左右边距 | 3% |
 | 顶部边距 | 4% |
 | 底部信息区 | 22% |
+| 照片圆角半径 | 0%（直角） |
 | 背景模糊半径 | 3% |
 | 背景压暗 | 20% |
 | Logo 最大高度 | 5% |
+
+照片从左、右、上三边按边距内缩，底部留给信息区。默认是直角，需要圆角就传
+`--corner-radius`；想让模糊背景露得更多就把边距调大：
+
+```bash
+auto-shotframe photo.jpg --margin 0.06 --top-margin 0.075 --corner-radius 0.025
+```
 
 第一行显示相机与镜头。Apple 照片只显示 iPhone 型号，不会把
 `back triple camera` 之类的原始 EXIF 文本放进画面。第二行显示 ISO、光圈、
