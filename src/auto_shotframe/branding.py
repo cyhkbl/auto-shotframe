@@ -27,7 +27,24 @@ BRANDS = (
     ),
     Brand("Leica", "leica", ("LEICA", "LEICA CAMERA AG")),
     Brand("Hasselblad", "hasselblad", ("HASSELBLAD", "HASSELBLAD X")),
+    Brand("OnePlus", "oneplus", ("ONEPLUS", "ONE PLUS")),
 )
+
+# Internal codes that manufacturers write into the EXIF Model tag, mapped to the
+# product name people recognize. Keyed by brand slug and matched
+# case-insensitively. Photos keep their original EXIF; this only changes the
+# caption drawn on the frame.
+DISPLAY_MODEL_NAMES: dict[str, dict[str, str]] = {
+    "oneplus": {
+        # OnePlus 8T regional variants: KB2000 China, KB2001 India, KB2003
+        # Europe, KB2005 international. KB2007 is the T-Mobile 8T+ 5G.
+        "KB2000": "OnePlus 8T",
+        "KB2001": "OnePlus 8T",
+        "KB2003": "OnePlus 8T",
+        "KB2005": "OnePlus 8T",
+        "KB2007": "OnePlus 8T+ 5G",
+    },
+}
 
 
 def normalize_manufacturer(make: str | None) -> Brand | None:
@@ -38,6 +55,13 @@ def normalize_manufacturer(make: str | None) -> Brand | None:
         if any(alias in normalized for alias in brand.aliases):
             return brand
     return None
+
+
+def display_model_name(brand: Brand | None, model: str | None) -> str | None:
+    """Return the human-readable camera name for a brand and EXIF model code."""
+    if brand is None or not model:
+        return model
+    return DISPLAY_MODEL_NAMES.get(brand.slug, {}).get(model.strip().upper(), model)
 
 
 def _custom_logo_path(brand: Brand, logo_dir: Path | None) -> Path | None:

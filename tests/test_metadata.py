@@ -77,6 +77,60 @@ def test_apple_lens_without_camera_model_does_not_create_shot_on_line() -> None:
     assert extract_metadata(exif).shot_on_line is None
 
 
+def test_oneplus_internal_model_renders_as_marketed_name_without_touching_exif() -> None:
+    exif = piexif.dump(
+        {
+            "0th": {
+                piexif.ImageIFD.Make: b"OnePlus",
+                piexif.ImageIFD.Model: b"KB2000",
+            },
+            "Exif": {
+                piexif.ExifIFD.ISOSpeedRatings: 1000,
+                piexif.ExifIFD.FNumber: (175, 100),
+                piexif.ExifIFD.ExposureTime: (4, 100),
+                piexif.ExifIFD.FocalLength: (4745, 1000),
+            },
+            "GPS": {},
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
+
+    metadata = extract_metadata(exif)
+
+    assert metadata.brand is not None
+    assert metadata.brand.slug == "oneplus"
+    assert metadata.camera == "KB2000"
+    assert metadata.display_camera == "OnePlus 8T"
+    assert metadata.shot_on_line == "Shot on OnePlus 8T"
+
+    cleaned = sanitize_exif(exif, width=2160, height=1743)
+    assert cleaned is not None
+    result = piexif.load(cleaned)
+    assert result["0th"][piexif.ImageIFD.Make] == b"OnePlus"
+    assert result["0th"][piexif.ImageIFD.Model] == b"KB2000"
+
+
+def test_oneplus_lowercase_make_is_recognized() -> None:
+    exif = piexif.dump(
+        {
+            "0th": {
+                piexif.ImageIFD.Make: b"oneplus",
+                piexif.ImageIFD.Model: b"kb2005",
+            },
+            "Exif": {},
+            "GPS": {},
+            "1st": {},
+            "thumbnail": None,
+        }
+    )
+
+    metadata = extract_metadata(exif)
+
+    assert metadata.display_camera == "OnePlus 8T"
+    assert metadata.shot_on_line == "Shot on OnePlus 8T"
+
+
 def test_sanitize_exif_removes_sensitive_values_and_updates_dimensions() -> None:
     cleaned = sanitize_exif(sample_exif(), width=6400, height=4800)
     assert cleaned is not None

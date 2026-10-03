@@ -1,7 +1,12 @@
 import pytest
 from PIL import Image
 
-from auto_shotframe.branding import BRANDS, load_logo, normalize_manufacturer
+from auto_shotframe.branding import (
+    BRANDS,
+    display_model_name,
+    load_logo,
+    normalize_manufacturer,
+)
 
 
 @pytest.mark.parametrize(
@@ -16,6 +21,11 @@ from auto_shotframe.branding import BRANDS, load_logo, normalize_manufacturer
         ("Panasonic Corporation", "Panasonic"),
         ("LEICA CAMERA AG", "Leica"),
         ("Hasselblad", "Hasselblad"),
+        ("OnePlus", "OnePlus"),
+        ("ONEPLUS", "OnePlus"),
+        ("oneplus", "OnePlus"),
+        ("  OnePlus  ", "OnePlus"),
+        ("OnePlus Technology (Shenzhen) Co., Ltd.", "OnePlus"),
     ],
 )
 def test_supported_manufacturers(make: str, expected: str) -> None:
@@ -27,6 +37,27 @@ def test_supported_manufacturers(make: str, expected: str) -> None:
 def test_unknown_manufacturer() -> None:
     assert normalize_manufacturer("Imaginary Camera Company") is None
     assert normalize_manufacturer(None) is None
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("KB2000", "OnePlus 8T"),
+        ("kb2000", "OnePlus 8T"),
+        ("  KB2005  ", "OnePlus 8T"),
+        ("KB2007", "OnePlus 8T+ 5G"),
+        ("KB9999", "KB9999"),
+        (None, None),
+    ],
+)
+def test_oneplus_internal_model_codes_are_expanded(model, expected) -> None:
+    brand = normalize_manufacturer("OnePlus")
+    assert display_model_name(brand, model) == expected
+
+
+def test_other_brands_and_unknown_brands_keep_the_exif_model() -> None:
+    assert display_model_name(normalize_manufacturer("SONY"), "ILCE-7M4") == "ILCE-7M4"
+    assert display_model_name(None, "KB2000") == "KB2000"
 
 
 @pytest.mark.parametrize("brand", BRANDS, ids=lambda brand: brand.slug)

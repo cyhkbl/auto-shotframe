@@ -14,10 +14,11 @@ https://github.com/google/fonts/tree/6e4b84c976cadb3c49a40fd9a1c203e4f7fcf2da/of
 
 ## Simple Icons
 
-The Apple, Nikon, Sony, Fujifilm, Panasonic, and Leica SVG source files come from
-Simple Icons 16.21.0. The Simple Icons repository carries a CC0 1.0 Universal
-license. Its disclaimer notes that individual brand rights and usage guidelines
-may differ. Copies of both documents are bundled beside the logo directories.
+The Apple, Nikon, Sony, Fujifilm, Panasonic, Leica, and OnePlus SVG source files
+come from Simple Icons 16.21.0. The Simple Icons repository carries a CC0 1.0
+Universal license. Its disclaimer notes that individual brand rights and usage
+guidelines may differ. Copies of both documents are bundled beside the logo
+directories.
 
 Source:
 https://github.com/simple-icons/simple-icons/releases/tag/16.21.0
@@ -30,6 +31,7 @@ SHA-256:
 - `fujifilm.svg`: `32614acc01d693ef73bfa82680f10c07d5a433d78896c013c2d6fb2b9ee379b4`
 - `panasonic.svg`: `72034f2812318af5b16607f0038d7477678705a812a00d25149357e5bf472dd7`
 - `leica.svg`: `7d5b56ebd41655776bc0f3c2ffd1c94565a0a5d4482b1df968d2d62d5ac67fa8`
+- `oneplus.svg`: `36383c496fa98bdc3b4b72507e42408faaabb1887bbfd384aa4dd9c83a0686e6`
 
 ## Canon
 
