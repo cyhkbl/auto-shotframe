@@ -13,14 +13,15 @@ from auto_shotframe.metadata import PhotoMetadata
 
 @dataclass(frozen=True)
 class FrameOptions:
-    margin: float = 0.03
-    top_margin: float = 0.04
+    margin: float = 0.06
+    top_margin: float = 0.075
     info_height: float = 0.22
     blur: float = 0.03
     darken: float = 0.20
     shadow_blur: float = 0.015
     shadow_offset: float = 0.008
     logo_height: float = 0.05
+    corner_radius: float = 0.025
 
     def validate(self) -> None:
         for name in (
@@ -31,6 +32,7 @@ class FrameOptions:
             "shadow_blur",
             "shadow_offset",
             "logo_height",
+            "corner_radius",
         ):
             value = getattr(self, name)
             if value < 0 or value > 1:
@@ -52,6 +54,7 @@ class Layout:
     info_y: int
     info_height: int
     short_edge: int
+    corner_radius: int
 
 
 def calculate_layout(width: int, height: int, options: FrameOptions) -> Layout:
@@ -62,6 +65,11 @@ def calculate_layout(width: int, height: int, options: FrameOptions) -> Layout:
     side = round(options.margin * short_edge)
     top = round(options.top_margin * short_edge)
     info = max(1, round(options.info_height * short_edge))
+    radius = min(
+        round(options.corner_radius * short_edge),
+        width // 2,
+        height // 2,
+    )
     return Layout(
         canvas_width=width + (2 * side),
         canvas_height=height + top + info,
@@ -72,6 +80,7 @@ def calculate_layout(width: int, height: int, options: FrameOptions) -> Layout:
         info_y=top + height,
         info_height=info,
         short_edge=short_edge,
+        corner_radius=max(0, radius),
     )
 
 
@@ -205,6 +214,44 @@ def _scaled_logo(logo: Image.Image, max_width: int, max_height: int) -> Image.Im
     )
 
 
+def _corner_tile(radius: int, corner: str, *, supersample: int) -> Image.Image:
+    """Render one anti-aliased rounded-rectangle corner as an ``L`` mask tile."""
+    scale = max(1, supersample)
+    size = max(1, radius * scale)
+    # Centre of the corner arc inside the tile. The visible quadrant is the one
+    # that fills towards the middle of the rectangle.
+    centres = {
+        "tl": (size, size),
+        "tr": (0, size),
+        "bl": (size, 0),
+        "br": (0, 0),
+    }
+    centre_x, centre_y = centres[corner]
+    tile = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(tile).ellipse(
+        (centre_x - size, centre_y - size, centre_x + size, centre_y + size),
+        fill=255,
+    )
+    return tile.resize((radius, radius), Image.Resampling.LANCZOS)
+
+
+def _rounded_mask(size: tuple[int, int], radius: int, *, supersample: int = 4) -> Image.Image:
+    """Build an anti-aliased rounded-rectangle mask for the framed photo."""
+    width, height = size
+    mask = Image.new("L", (width, height), 255)
+    radius = max(0, min(radius, width // 2, height // 2))
+    if radius == 0:
+        return mask
+    for corner, box in (
+        ("tl", (0, 0)),
+        ("tr", (width - radius, 0)),
+        ("bl", (0, height - radius)),
+        ("br", (width - radius, height - radius)),
+    ):
+        mask.paste(_corner_tile(radius, corner, supersample=supersample), box)
+    return mask
+
+
 def render_frame(
     image: Image.Image,
     metadata: PhotoMetadata,
@@ -215,6 +262,10 @@ def render_frame(
 ) -> Image.Image:
     layout = calculate_layout(image.width, image.height, options)
     canvas_size = (layout.canvas_width, layout.canvas_height)
+    photo_mask = _rounded_mask(
+        (layout.image_width, layout.image_height),
+        layout.corner_radius,
+    )
 
     background = _cover(image, canvas_size).filter(
         ImageFilter.GaussianBlur(radius=max(0, options.blur * layout.short_edge))
@@ -228,22 +279,17 @@ def render_frame(
     canvas = background.convert("RGBA")
 
     shadow = Image.new("L", canvas_size, 0)
-    shadow_draw = ImageDraw.Draw(shadow)
     offset = round(options.shadow_offset * layout.short_edge)
-    shadow_draw.rectangle(
-        (
-            layout.image_x + offset,
-            layout.image_y + offset,
-            layout.image_x + layout.image_width + offset,
-            layout.image_y + layout.image_height + offset,
-        ),
-        fill=105,
-    )
+    # Reuse the photo mask so the shadow follows the rounded silhouette instead
+    # of poking out square corners behind the photo.
+    shadow.paste(105, (layout.image_x + offset, layout.image_y + offset), photo_mask)
     shadow = shadow.filter(
         ImageFilter.GaussianBlur(radius=max(0, options.shadow_blur * layout.short_edge))
     )
     canvas.paste((0, 0, 0, 255), (0, 0), shadow)
-    canvas.alpha_composite(image.convert("RGBA"), (layout.image_x, layout.image_y))
+    photo = image.convert("RGBA")
+    photo.putalpha(photo_mask)
+    canvas.alpha_composite(photo, (layout.image_x, layout.image_y))
 
     draw = ImageDraw.Draw(canvas)
     text_overlay = Image.new("RGBA", canvas_size, (0, 0, 0, 0))

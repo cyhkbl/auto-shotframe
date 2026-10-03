@@ -27,6 +27,7 @@ photo_framed.jpg
 - 支持单张 JPEG、HEIC、HEIF、TIF、TIFF 照片，也支持处理一个目录；
 - 完整保留照片内容，不裁切、不拉伸；
 - 按照片比例生成模糊、压暗的延展背景；
+- 照片带抗锯齿圆角，投影也跟随圆角轮廓；
 - 从 EXIF 读取相机、镜头、ISO、光圈、快门和焦距；
 - 识别 Apple、Nikon、Canon、Sony、Fujifilm、Panasonic、Leica、Hasselblad
   和 OnePlus；
@@ -100,9 +101,10 @@ auto-shotframe photo.jpg --max-long-edge 1080
 --quality N          JPEG 质量 1–100；默认 92，原尺寸模式默认 95
 -o, --original-size  保留原图像素尺寸，但仍会重新编码 JPEG
 --max-long-edge N    最终相框画布的最大长边；默认 2160
---margin R           左右边距相对照片短边的比例；默认 0.03
---top-margin R       顶部边距比例；默认 0.04
+--margin R           左右边距相对照片短边的比例；默认 0.06
+--top-margin R       顶部边距比例；默认 0.075
 --info-height R      底部信息区高度比例；默认 0.22
+--corner-radius R    照片圆角半径比例，0 为直角；默认 0.025
 --blur R             背景模糊半径比例；默认 0.03
 --darken R           背景压暗程度 0–1；默认 0.20
 --logo-dir PATH      自定义小写 PNG Logo 所在目录
@@ -147,12 +149,20 @@ auto-shotframe photo.jpg --logo-dir ./my-logos
 
 | 元素 | 默认值 |
 | --- | ---: |
-| 左右边距 | 3% |
-| 顶部边距 | 4% |
+| 左右边距 | 6% |
+| 顶部边距 | 7.5% |
 | 底部信息区 | 22% |
+| 照片圆角半径 | 2.5% |
 | 背景模糊半径 | 3% |
 | 背景压暗 | 20% |
 | Logo 最大高度 | 5% |
+
+照片从左、右、上三边按边距内缩，底部留给信息区。想露出更多模糊背景就把边距
+调大；想要直角就设 `--corner-radius 0`：
+
+```bash
+auto-shotframe photo.jpg --margin 0.09 --top-margin 0.11 --corner-radius 0.04
+```
 
 第一行显示相机与镜头。Apple 照片只显示 iPhone 型号，不会把
 `back triple camera` 之类的原始 EXIF 文本放进画面。第二行显示 ISO、光圈、

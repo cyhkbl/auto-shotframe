@@ -33,11 +33,17 @@ def test_reference_style_visual_ranges() -> None:
         focal_length_mm=150,
     )
     framed = render_frame(source, metadata, options=FrameOptions())
+    layout = calculate_layout(*source.size, FrameOptions())
 
-    assert framed.size == (624, 504)
-    assert framed.getpixel((12, 16)) == source.getpixel((0, 0))
+    assert framed.size == (648, 518)
+    # Sample past the rounded corner, so the pixel still belongs to the photo.
+    inset = layout.corner_radius + 2
+    assert (
+        framed.getpixel((layout.image_x + inset, layout.image_y + inset))
+        == source.getpixel((inset, inset))
+    )
 
-    info = framed.crop((0, 416, 624, 504))
+    info = framed.crop((0, layout.info_y, layout.canvas_width, layout.canvas_height))
     extrema = ImageStat.Stat(info).extrema
     assert max(channel[1] - channel[0] for channel in extrema) > 150
 

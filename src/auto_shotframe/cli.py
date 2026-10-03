@@ -59,20 +59,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--margin",
         type=float,
-        default=0.03,
-        help="left/right margin as a short-edge ratio (default: 0.03)",
+        default=0.06,
+        help="left/right margin as a short-edge ratio (default: 0.06)",
     )
     parser.add_argument(
         "--top-margin",
         type=float,
-        default=0.04,
-        help="top margin as a short-edge ratio (default: 0.04)",
+        default=0.075,
+        help="top margin as a short-edge ratio (default: 0.075)",
     )
     parser.add_argument(
         "--info-height",
         type=float,
         default=0.22,
         help="bottom information area as a short-edge ratio (default: 0.22)",
+    )
+    parser.add_argument(
+        "--corner-radius",
+        type=float,
+        default=0.025,
+        help="photo corner radius as a short-edge ratio, 0 for square (default: 0.025)",
     )
     parser.add_argument(
         "--blur",
@@ -203,6 +209,7 @@ def _validate_args(
         info_height=args.info_height,
         blur=args.blur,
         darken=args.darken,
+        corner_radius=args.corner_radius,
     )
     try:
         options.validate()

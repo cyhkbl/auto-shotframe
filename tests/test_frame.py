@@ -22,33 +22,82 @@ EMPTY_METADATA = PhotoMetadata(
 
 def test_default_horizontal_layout() -> None:
     layout = calculate_layout(6000, 4000, FrameOptions())
-    assert layout.canvas_width == 6240
-    assert layout.canvas_height == 5040
-    assert layout.image_x == 120
-    assert layout.image_y == 160
+    assert layout.canvas_width == 6480
+    assert layout.canvas_height == 5180
+    assert layout.image_x == 240
+    assert layout.image_y == 300
     assert layout.info_height == 880
+    assert layout.corner_radius == 100
 
 
 def test_default_vertical_layout() -> None:
     layout = calculate_layout(3000, 4500, FrameOptions())
-    assert layout.canvas_width == 3180
-    assert layout.canvas_height == 5280
-    assert layout.image_x == 90
-    assert layout.image_y == 120
+    assert layout.canvas_width == 3360
+    assert layout.canvas_height == 5385
+    assert layout.image_x == 180
+    assert layout.image_y == 225
     assert layout.info_height == 660
+
+
+def test_corner_radius_is_clamped_to_half_the_photo() -> None:
+    layout = calculate_layout(40, 20, FrameOptions(corner_radius=0.9))
+    assert layout.corner_radius == 10
+
+
+def test_zero_corner_radius_keeps_square_corners() -> None:
+    source = Image.new("RGB", (200, 100), (20, 120, 200))
+    options = FrameOptions(
+        corner_radius=0,
+        blur=0,
+        darken=0,
+        shadow_blur=0,
+        shadow_offset=0,
+    )
+    result = render_frame(source, EMPTY_METADATA, options=options, show_logo=False)
+    layout = calculate_layout(200, 100, options)
+
+    assert result.getpixel((layout.image_x, layout.image_y)) == (20, 120, 200)
+
+
+def test_rounded_corners_expose_the_background() -> None:
+    source = Image.new("RGB", (600, 400), (250, 250, 250))
+    options = FrameOptions(
+        corner_radius=0.05,
+        blur=0,
+        darken=1.0,
+        shadow_blur=0,
+        shadow_offset=0,
+    )
+    result = render_frame(source, EMPTY_METADATA, options=options, show_logo=False)
+    layout = calculate_layout(600, 400, options)
+    assert layout.corner_radius > 0
+
+    # The extreme corner of the photo area is cut away and shows the darkened
+    # background; a point past the radius keeps the original photo pixel.
+    corner = result.getpixel((layout.image_x, layout.image_y))
+    inset = layout.corner_radius + 3
+    inside = result.getpixel((layout.image_x + inset, layout.image_y + inset))
+
+    assert sum(corner) < sum(inside)
+    assert inside == (250, 250, 250)
 
 
 def test_render_frame_preserves_source_pixels_and_adds_canvas() -> None:
     source = Image.new("RGB", (200, 100), (20, 120, 200))
+    options = FrameOptions()
     result = render_frame(
         source,
         EMPTY_METADATA,
-        options=FrameOptions(),
+        options=options,
         show_logo=False,
     )
+    layout = calculate_layout(200, 100, options)
+
     assert result.mode == "RGB"
-    assert result.size == (206, 126)
-    assert result.getpixel((3, 4)) == source.getpixel((0, 0))
+    assert result.size == (212, 130)
+    assert (
+        result.getpixel((layout.image_x + 10, layout.image_y + 10)) == source.getpixel((0, 0))
+    )
 
 
 def test_fit_source_dimensions_limits_landscape_final_canvas() -> None:

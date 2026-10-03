@@ -27,6 +27,8 @@ If the name already exists, the next result is `photo_framed_2.jpg`.
   them;
 - preserves the complete photo without cropping or stretching;
 - creates a proportional blurred and darkened background;
+- draws the photo with anti-aliased rounded corners and a drop shadow that
+  follows the same rounded silhouette;
 - reads camera, lens, ISO, aperture, shutter speed, and focal length from EXIF;
 - recognizes Apple, Nikon, Canon, Sony, Fujifilm, Panasonic, Leica,
   Hasselblad, and OnePlus;
@@ -99,9 +101,10 @@ auto-shotframe photo.jpg --max-long-edge 1080
 --quality N          JPEG quality; default: 92, or 95 with --original-size
 -o, --original-size  keep source pixel dimensions; still encodes as JPEG
 --max-long-edge N    maximum final canvas long edge; default: 2160
---margin R           left/right margin as a short-edge ratio; default: 0.03
---top-margin R       top margin as a short-edge ratio; default: 0.04
+--margin R           left/right margin as a short-edge ratio; default: 0.06
+--top-margin R       top margin as a short-edge ratio; default: 0.075
 --info-height R      information-area ratio; default: 0.22
+--corner-radius R    photo corner radius as a short-edge ratio; default: 0.025
 --blur R             blur radius ratio; default: 0.03
 --darken R           background darkening from 0 to 1; default: 0.20
 --logo-dir PATH      directory containing custom lowercase PNG logos
@@ -146,12 +149,21 @@ All dimensions scale from the source photo's short edge:
 
 | Element | Default |
 | --- | ---: |
-| Left/right margin | 3% |
-| Top margin | 4% |
+| Left/right margin | 6% |
+| Top margin | 7.5% |
 | Bottom information area | 22% |
+| Photo corner radius | 2.5% |
 | Background blur radius | 3% |
 | Background darkening | 20% |
 | Logo maximum height | 5% |
+
+The photo is inset by the margin on the left, right, and top; the information
+area occupies the bottom. Raise the margins to show more of the blurred
+background, or set `--corner-radius 0` for square corners:
+
+```bash
+auto-shotframe photo.jpg --margin 0.09 --top-margin 0.11 --corner-radius 0.04
+```
 
 The first line contains the camera and lens. For Apple photos it contains only
 the iPhone model, avoiding raw descriptions such as `back triple camera`. The
